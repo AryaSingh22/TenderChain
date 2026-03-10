@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --gradient-authority: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #3b82f6 100%);
+  --gradient-contractor: linear-gradient(135deg, #14532d 0%, #16a34a 50%, #22c55e 100%);
+  --gradient-audit: linear-gradient(135deg, #581c87 0%, #9333ea 50%, #a855f7 100%);
+}
+
+@layer base {
+  body {
+    @apply bg-gray-950 text-gray-100 font-sans antialiased;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl;
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 
+           hover:scale-105 hover:shadow-lg active:scale-95;
+  }
+
+  .btn-authority {
+    @apply btn-primary bg-gradient-to-r from-authority-700 to-authority-500 
+           hover:shadow-authority-500/30;
+  }
+
+  .btn-contractor {
+    @apply btn-primary bg-gradient-to-r from-contractor-700 to-contractor-500 
+           hover:shadow-contractor-500/30;
+  }
+
+  .btn-audit {
+    @apply btn-primary bg-gradient-to-r from-audit-700 to-audit-500 
+           hover:shadow-audit-500/30;
+  }
+
+  .stat-card {
+    @apply glass-card p-6 flex flex-col gap-2;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl 
+           text-white placeholder-gray-500 focus:outline-none focus:ring-2 
+           focus:border-transparent transition-all duration-200;
+  }
+
+  .nav-link {
+    @apply px-4 py-2 rounded-lg text-sm font-medium text-gray-400 
+           hover:text-white hover:bg-white/10 transition-all duration-200;
+  }
+
+  .nav-link-active {
+    @apply text-white bg-white/10;
+  }
+
+  .badge {
+    @apply px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider;
+  }
+
+  .timeline-dot {
+    @apply w-4 h-4 rounded-full border-2 border-current;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}

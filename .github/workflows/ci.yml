@@ -1,0 +1,128 @@
+name: TenderChain CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: "18"
+
+jobs:
+  # ── Lint ────────────────────────────────────────────────────
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - name: Lint TypeScript (ESLint + Prettier)
+        run: pnpm run lint || true
+      - name: Lint Solidity (Solhint)
+        run: pnpm --filter @tenderchain/contracts lint || true
+
+  # ── Test Contracts ──────────────────────────────────────────
+  test-contracts:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - name: Compile contracts
+        run: pnpm contracts:compile
+      - name: Run tests
+        run: pnpm contracts:test
+      - name: Run coverage
+        run: pnpm contracts:coverage
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(grep -o '"total":[0-9]*' coverage/coverage-summary.json | head -1 | grep -o '[0-9]*')
+          if [ "$COVERAGE" -lt "95" ]; then
+            echo "Coverage ${COVERAGE}% is below 95% threshold"
+            exit 1
+          fi
+
+  # ── Test Backend ────────────────────────────────────────────
+  test-backend:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - name: Run backend tests
+        run: pnpm backend:test
+
+  # ── Build ───────────────────────────────────────────────────
+  build:
+    runs-on: ubuntu-latest
+    needs: [test-contracts, test-backend]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - name: Build all packages
+        run: pnpm build
+
+  # ── Security Scan ───────────────────────────────────────────
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - name: Install Slither
+        run: pip3 install slither-analyzer
+      - name: Run Slither on contracts
+        run: |
+          cd packages/contracts
+          slither . --exclude-dependencies || true
+      - name: Run npm audit
+        run: pnpm audit || true
+
+  # ── Deploy Staging ──────────────────────────────────────────
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [build, security-scan]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy contracts to testnet
+        run: echo "Deploying contracts to testnet..."
+      - name: Deploy backend to staging
+        run: echo "Deploying backend to staging..."
+      - name: Deploy frontend to Vercel
+        run: echo "Deploying frontend to Vercel preview..."

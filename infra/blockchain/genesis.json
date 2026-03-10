@@ -1,0 +1,49 @@
+{
+    "name": "TenderChain",
+    "genesis": {
+        "nonce": "0x0000000000000000",
+        "timestamp": "0x0",
+        "gasLimit": "0x1C9C380",
+        "difficulty": "0x1",
+        "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "coinbase": "0x0000000000000000000000000000000000000000"
+    },
+    "params": {
+        "chainID": 20240901,
+        "forks": {
+            "homestead": 0,
+            "byzantium": 0,
+            "constantinople": 0,
+            "petersburg": 0,
+            "istanbul": 0,
+            "london": 0
+        },
+        "engine": {
+            "ibft": {
+                "params": {
+                    "bft": {},
+                    "epochLength": 100,
+                    "blockPeriod": 2,
+                    "requestTimeout": 10
+                }
+            }
+        },
+        "blockGasTarget": 30000000
+    },
+    "bootnodes": [],
+    "accounts": {
+        "0x0000000000000000000000000000000000000000": {
+            "comment": "--- Governance Wallet ---",
+            "balance": "0xD3C21BCECCEDA1000000"
+        },
+        "0x0000000000000000000000000000000000000001": {
+            "comment": "--- Relayer Wallet ---",
+            "balance": "0xD3C21BCECCEDA1000000"
+        },
+        "0x0000000000000000000000000000000000000002": {
+            "comment": "--- Contract Deployer Wallet ---",
+            "balance": "0xD3C21BCECCEDA1000000"
+        }
+    },
+    "validators": []
+}

@@ -1,0 +1,145 @@
+version: "3.9"
+
+services:
+  # ────────────── Blockchain Nodes ──────────────
+  blockchain-node-1:
+    image: 0xpolygon/polygon-edge:latest
+    container_name: tenderchain-node-1
+    command: >
+      server --data-dir /data/node1
+      --chain /genesis/genesis.json
+      --grpc-address 0.0.0.0:10000
+      --libp2p 0.0.0.0:10001
+      --jsonrpc 0.0.0.0:8545
+      --seal
+    ports:
+      - "8545:8545"
+      - "10000:10000"
+    volumes:
+      - node1-data:/data/node1
+      - ./infra/blockchain:/genesis
+    networks:
+      - tenderchain
+
+  blockchain-node-2:
+    image: 0xpolygon/polygon-edge:latest
+    container_name: tenderchain-node-2
+    command: >
+      server --data-dir /data/node2
+      --chain /genesis/genesis.json
+      --grpc-address 0.0.0.0:10000
+      --libp2p 0.0.0.0:10001
+      --jsonrpc 0.0.0.0:8546
+      --seal
+    ports:
+      - "8546:8546"
+    volumes:
+      - node2-data:/data/node2
+      - ./infra/blockchain:/genesis
+    networks:
+      - tenderchain
+
+  # ────────────── Backend API ──────────────
+  backend-api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.backend
+    container_name: tenderchain-backend
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DATABASE_URL=postgresql://tenderchain:tenderchain@postgres:5432/tenderchain
+      - RPC_URL=http://blockchain-node-1:8545
+      - CHAIN_ID=20240901
+      - JWT_SECRET=docker-dev-secret-change-in-production
+      - FRONTEND_URL=http://localhost:3000
+      - IPFS_API_URL=http://ipfs:5001
+    depends_on:
+      - postgres
+      - blockchain-node-1
+    networks:
+      - tenderchain
+
+  # ────────────── Frontend ──────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.frontend
+    container_name: tenderchain-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3001/api
+      - NEXT_PUBLIC_WS_URL=ws://localhost:3001/ws
+      - NEXT_PUBLIC_RPC_URL=http://localhost:8545
+    depends_on:
+      - backend-api
+    networks:
+      - tenderchain
+
+  # ────────────── PostgreSQL ──────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: tenderchain-postgres
+    environment:
+      POSTGRES_USER: tenderchain
+      POSTGRES_PASSWORD: tenderchain
+      POSTGRES_DB: tenderchain
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - tenderchain
+
+  # ────────────── IPFS ──────────────
+  ipfs:
+    image: ipfs/kubo:latest
+    container_name: tenderchain-ipfs
+    ports:
+      - "4001:4001"    # Swarm
+      - "5001:5001"    # API
+      - "8080:8080"    # Gateway
+    volumes:
+      - ipfs-data:/data/ipfs
+    networks:
+      - tenderchain
+
+  # ────────────── Monitoring ──────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: tenderchain-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - tenderchain
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: tenderchain-grafana
+    ports:
+      - "3002:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - tenderchain
+
+volumes:
+  node1-data:
+  node2-data:
+  postgres-data:
+  ipfs-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  tenderchain:
+    driver: bridge

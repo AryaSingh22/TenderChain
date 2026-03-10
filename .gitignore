@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+.next/
+coverage/
+artifacts/
+cache/
+typechain-types/
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+Thumbs.db
+TenderChain_Master_Agent_Prompt.docx
+TenderChain_Master_Agent_Prompt.txt

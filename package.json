@@ -1,0 +1,25 @@
+{
+  "name": "tenderchain",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Permissioned blockchain platform for government procurement",
+  "scripts": {
+    "contracts:compile": "pnpm --filter @tenderchain/contracts compile",
+    "contracts:test": "pnpm --filter @tenderchain/contracts test",
+    "contracts:coverage": "pnpm --filter @tenderchain/contracts coverage",
+    "contracts:deploy": "pnpm --filter @tenderchain/contracts deploy",
+    "backend:dev": "pnpm --filter @tenderchain/backend dev",
+    "backend:build": "pnpm --filter @tenderchain/backend build",
+    "backend:test": "pnpm --filter @tenderchain/backend test",
+    "frontend:dev": "pnpm --filter @tenderchain/frontend dev",
+    "frontend:build": "pnpm --filter @tenderchain/frontend build",
+    "lint": "pnpm -r run lint",
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "seed": "pnpm --filter @tenderchain/contracts exec npx hardhat run scripts/seed.ts"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
