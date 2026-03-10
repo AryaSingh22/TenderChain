@@ -50,7 +50,13 @@ jobs:
         run: pnpm contracts:coverage
       - name: Check coverage threshold
         run: |
-          COVERAGE=$(grep -o '"total":[0-9]*' coverage/coverage-summary.json | head -1 | grep -o '[0-9]*')
+          COVERAGE_FILE="packages/contracts/coverage/coverage-summary.json"
+          if [ ! -f "$COVERAGE_FILE" ]; then
+            echo "Coverage summary not found at $COVERAGE_FILE"
+            exit 1
+          fi
+          COVERAGE=$(node -e "const c=require('./$COVERAGE_FILE'); console.log(Math.floor(c.total.lines.pct))")
+          echo "Line coverage: ${COVERAGE}%"
           if [ "$COVERAGE" -lt "95" ]; then
             echo "Coverage ${COVERAGE}% is below 95% threshold"
             exit 1
