@@ -1,5 +1,5 @@
 # TenderChain 
- 
+
 > Permissioned blockchain platform for transparent government procurement
 
 [![CI/CD](https://github.com/your-org/tenderchain/workflows/TenderChain%20CI%2FCD/badge.svg)](https://github.com/your-org/tenderchain/actions)
